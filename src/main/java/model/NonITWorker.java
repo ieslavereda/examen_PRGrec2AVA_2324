@@ -1,3 +1,5 @@
+package model;
+
 public class NonITWorker extends Worker {
     private final Department departament;
 

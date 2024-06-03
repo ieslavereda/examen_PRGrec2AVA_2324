@@ -1,3 +1,5 @@
+package model;
+
 import java.io.Serializable;
 
 public abstract class Worker implements Payable, Comparable<Worker>, Serializable {
@@ -74,7 +76,7 @@ public abstract class Worker implements Payable, Comparable<Worker>, Serializabl
 
     @Override
     public String toString() {
-        return "Worker{" +
+        return "model.Worker{" +
                 "nombre='" + nombre + '\'' +
                 ", apellidos='" + apellidos + '\'' +
                 ", DNI='" + DNI + '\'' +

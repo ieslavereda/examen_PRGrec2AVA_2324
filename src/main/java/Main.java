@@ -1,3 +1,8 @@
+import model.ITWorker;
+import model.NonITWorker;
+import model.Payable;
+import model.Worker;
+
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -9,27 +14,10 @@ public class Main {
         // cargar datos desde csv
         List<Worker> workers = cargarDatos("documento.csv");
         System.out.println(getPersonsSorted(workers));
-/*
-        // pasar de Set<Persona> a Map<Titulo,List<NonITWorker>>
-        Map<Titulo,List<NonITWorker>> alumnosTitulo = getAlumnosTitulo(Workers);
-
-        // imprimir carnets de alumnos ordenados edad
-        imprimirCarnets(getAlumnosSortedByAge(Workers));
-
-        // imprimir carnets de todos ordenados alfabeticamente
-        System.out.println("1111111111111111111111111111111111111111111");
-        imprimirCarnets(getPersonsSorted(Workers));
-        System.out.println("1111111111111111111111111111111111111111111");
-
-        // guardar listado de alumnos de 1DAW
-        save(alumnosTitulo.get(Titulo.ASIR_1));
-
-        // guardar personas como objeto
-        saveAsObject(Workers);
-
-        // cargar personas
-        //loadObjectFile();
-*/
+        System.out.println(getITbyRole(workers));
+        printPayable(getPersonsSorted(workers));
+        System.out.println(getITWorkersSortedByExperience(workers));
+        saveAsObject(workers);
     }
 
     private static List<Worker> cargarDatos(String file) {
@@ -56,8 +44,8 @@ public class Main {
                     } else {
 
                         String categoriaString = fields[6];
-                        ITWorker.Categoria categoria = ITWorker.Categoria.getCategoriaFromString(categoriaString);
-                        workers.add(new ITWorker(nombre,apellidos,DNI,edad,mail,experiencia,categoria));
+                        ITWorker.Category category = ITWorker.Category.getCategoriaFromString(categoriaString);
+                        workers.add(new ITWorker(nombre,apellidos,DNI,edad,mail,experiencia, category));
                     }
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
@@ -73,97 +61,43 @@ public class Main {
         return workers.stream().sorted().collect(Collectors.toList());
     }
 
-    /*
-    private static Set<Worker> loadObjectFile() {
-        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream("personas"))){
+    private static Map<ITWorker.Category, List<ITWorker>> getITbyRole(List<Worker> Workers) {
 
-            return (Set<Worker>) ois.readObject();
-
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static void saveAsObject(Set<Worker> Workers) {
-
-        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("personas"))) {
-
-            oos.writeObject(Workers);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-
-
-    private static List<Payable> getAlumnosSortedByAge(Set<Worker> Workers){
-
-        return Workers.stream()
-                .filter(p -> p instanceof NonITWorker)
-                .map(p-> (NonITWorker)p)
-                .sorted(Comparator.comparingInt(Worker::getEdad))
-                .collect(Collectors.toList());
-
-    }
-
-    private static Map<Titulo, List<NonITWorker>> getAlumnosTitulo(Set<Worker> Workers) {
-
-        Map<Titulo, List<NonITWorker>> titulos= new HashMap<>();
+        Map<ITWorker.Category, List<ITWorker>> categories= new HashMap<>();
 
         Workers.stream()
-                .filter( p -> p instanceof NonITWorker)
-                .map(Worker -> (NonITWorker) Worker)
-                .forEach( alumno -> {
-                    if(titulos.containsKey(alumno.getTitulo()))
-                        titulos.get(alumno.getTitulo()).add(alumno);
-                    else
-                        titulos.put(alumno.getTitulo(),new ArrayList<>(List.of(alumno)));
+                .filter( p -> p instanceof ITWorker)
+                .map(itWorker -> (ITWorker) itWorker)
+                .forEach( itWorker -> {
+                if(categories.containsKey(itWorker.getCategory()))
+                    categories.get(itWorker.getCategory()).add(itWorker);
+                else
+                    categories.put(itWorker.getCategory(),new ArrayList<>(List.of(itWorker)));
                 });
-
-     */
-
-        /*
-        for(Persona persona : personas){
-            if(persona instanceof NonITWorker){
-                NonITWorker alumno = (NonITWorker) persona;
-                if(titulos.containsKey(alumno.getTitulo()))
-                    titulos.get(alumno.getTitulo()).add(alumno);
-                else {
-                    titulos.put(alumno.getTitulo(),new ArrayList<>(List.of(alumno)));
-                }
-            }
-        }
-        */
-/*
-        return titulos;
+        return categories;
     }
 
-
-
-    private static void imprimirCarnets(Collection<Payable> payables){
-        for(Payable i : payables){
-            System.out.println("-----------------------");
-            System.out.println(i.getTipo());
-            System.out.println(i.getFullName());
-            System.out.println("-----------------------");
+    private static void printPayable(Collection<Payable> payables){
+        for(model.Payable i : payables){
+            System.out.println("Name: " + i.getFullName() + " YoE: " + i.getYearsExperience() + " Role: " + i.getRole());
         }
     }
 
-    private static void save(Collection<NonITWorker> alumnos){
+    private static List<Payable> getITWorkersSortedByExperience(List<Worker> workers){
 
-        try(PrintWriter pw = new PrintWriter(new FileWriter("alumnos.csv"))){
-            String linea="Nombre,Apellidos,NIA,Edad,Mail,Curso,Ciclo";
-            pw.println(linea);
+        return workers.stream()
+                .filter(p -> p instanceof ITWorker)
+                .map(p-> (ITWorker) p)
+                .sorted(Collections.reverseOrder(Comparator.comparingInt(model.Worker::getYearsExperience)))
+                .collect(Collectors.toList());
+    }
 
-            for (NonITWorker alumno:alumnos)
-                pw.println(alumno.getNombre()+","+alumno.getApellidos()+","+alumno.getNIA()+","+alumno.getEdad()+","+alumno.getEmail()+","+alumno.getTitulo());
-
+    private static void saveAsObject(List<Worker> workers) {
+        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("workers.dat"))) {
+            oos.writeObject(workers);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
- */
 }
