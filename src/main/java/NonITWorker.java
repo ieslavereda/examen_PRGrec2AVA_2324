@@ -11,6 +11,13 @@ public class NonITWorker extends Worker {
     }
 
     @Override
+    public String toString() {
+        return super.toString() +
+                " department=" + departament +
+                '}';
+    }
+
+    @Override
     public String getRole() {
         return getDepartament().getDepartmentAsString();
     }

@@ -5,10 +5,11 @@ import java.util.stream.Collectors;
 public class Main {
     public static void main(String[] args) {
 
-/*
-        // cargar datos desde csv
-        Set<Worker> Workers = cargarDatos("documento.csv");
 
+        // cargar datos desde csv
+        List<Worker> workers = cargarDatos("documento.csv");
+        System.out.println(getPersonsSorted(workers));
+/*
         // pasar de Set<Persona> a Map<Titulo,List<NonITWorker>>
         Map<Titulo,List<NonITWorker>> alumnosTitulo = getAlumnosTitulo(Workers);
 
@@ -29,6 +30,47 @@ public class Main {
         // cargar personas
         //loadObjectFile();
 */
+    }
+
+    private static List<Worker> cargarDatos(String file) {
+
+        List<Worker> workers = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+
+            String l;
+            br.readLine(); // Eliminamos la primera linea
+            while ((l = br.readLine()) != null) {
+                String[] fields = l.split(";");
+                String nombre = fields[0];
+                String apellidos = fields[1];
+                String DNI = fields[2];
+                int edad = Integer.parseInt(fields[3]);
+                String mail = fields[4];
+                int experiencia = Integer.parseInt(fields[5]);
+
+                try{
+                    if (fields[6].equals("")) {
+                        String departmentString = fields[7];
+                        NonITWorker.Department department = NonITWorker.Department.getDepartmentFromString(departmentString);
+                        workers.add(new NonITWorker(nombre,apellidos,DNI,edad,mail,experiencia,department));
+                    } else {
+
+                        String categoriaString = fields[6];
+                        ITWorker.Categoria categoria = ITWorker.Categoria.getCategoriaFromString(categoriaString);
+                        workers.add(new ITWorker(nombre,apellidos,DNI,edad,mail,experiencia,categoria));
+                    }
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return workers;
+    }
+
+    private static Collection<Payable> getPersonsSorted(List<Worker> workers) {
+        return workers.stream().sorted().collect(Collectors.toList());
     }
 
     /*
@@ -54,11 +96,7 @@ public class Main {
 
     }
 
-    private static Collection<Payable> getPersonsSorted(Set<Worker> Workers) {
-        return Workers.stream()
-                .sorted()
-                .collect(Collectors.toList());
-    }
+
 
     private static List<Payable> getAlumnosSortedByAge(Set<Worker> Workers){
 
@@ -102,42 +140,7 @@ public class Main {
         return titulos;
     }
 
-    private static Set<Worker> cargarDatos(String file) {
 
-        Set<Worker> Workers = new HashSet<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-
-            String l;
-            br.readLine(); // Eliminamos la primera linea
-            while ((l = br.readLine()) != null) {
-                String[] fields = l.split(",");
-                String nombre = fields[1];
-                String apellidos = fields[2];
-                int edad = Integer.parseInt(fields[5]);
-                String mail = fields[6];
-
-                if (fields[0].equalsIgnoreCase("NonITWorker")) {
-                    try {
-                        String NIA = fields[3];
-                        Curso curso = Curso.getCursoFromInt(Integer.parseInt(fields[7]));
-                        Ciclo ciclo = Ciclo.valueOf(fields[8]);
-                        Titulo titulo = Titulo.getTitulo(curso, ciclo);
-                        Workers.add(new NonITWorker(nombre, apellidos, edad, mail, NIA, titulo));
-                    } catch (Exception e) {
-                        System.out.println(e.getMessage());
-                    }
-                } else {
-                    String DNI = fields[4];
-                    Workers.add(new ITWorker(nombre, apellidos, edad, mail, DNI));
-                }
-            }
-
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return Workers;
-    }
 
     private static void imprimirCarnets(Collection<Payable> payables){
         for(Payable i : payables){

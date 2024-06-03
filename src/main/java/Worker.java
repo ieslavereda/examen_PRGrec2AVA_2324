@@ -72,4 +72,15 @@ public abstract class Worker implements Payable, Comparable<Worker>, Serializabl
         return getExperiencia();
     }
 
+    @Override
+    public String toString() {
+        return "Worker{" +
+                "nombre='" + nombre + '\'' +
+                ", apellidos='" + apellidos + '\'' +
+                ", DNI='" + DNI + '\'' +
+                ", edad=" + edad +
+                ", email='" + email + '\'' +
+                ", experiencia=" + experiencia +
+                '}';
+    }
 }

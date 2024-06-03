@@ -11,6 +11,13 @@ public class ITWorker extends Worker {
         return categoria.getCategoria();
     }
 
+    @Override
+    public String toString() {
+        return super.toString() +
+                " categoria=" + categoria +
+                '}';
+    }
+
     public enum Categoria{
         FULLSTACK("FullStack"),
         BACKEND("BackEnd"),
